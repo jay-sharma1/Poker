@@ -120,12 +120,59 @@ impl Hand {
     return dict;
   } 
 
+  // Return a set of 5 or more card with the same suit
+  fn return_flushes(&mut self, vec: Vec<Card>) -> Vec<Card> {
+    
+    let mut output: Vec<Card> = Vec::new();
+    for i in 0..7 {
+      if vec[i].suit == 'C' {
+        output.push(vec[i]);
+      }
+    }
+    if output.len() >= 5 {
+      return output;
+    }
+
+    let mut output: Vec<Card> = Vec::new();
+    for i in 0..7 {
+      if vec[i].suit == 'S' {
+        output.push(vec[i]);
+      }
+    }
+    if output.len() >= 5 {
+      return output;
+    }
+
+    let mut output: Vec<Card> = Vec::new();
+    for i in 0..7 {
+      if vec[i].suit == 'H' {
+        output.push(vec[i]);
+      }
+    }
+    if output.len() >= 5 {
+      return output;
+    }
+
+    let mut output: Vec<Card> = Vec::new();
+    for i in 0..7 {
+      if vec[i].suit == 'D' {
+        output.push(vec[i]);
+      }
+    }
+    if output.len() >= 5 {
+      return output;
+    }
+    
+    let output: Vec<Card> = Vec::new();
+    return output;
+  }  
+
   // Return every set of 5 Cards that count as a Straight
   fn return_straights(&mut self, vec: Vec<Card>) -> Vec<Vec<Card>> {
     let mut output: Vec<Vec<Card>> = Vec::new();
 
     // Go through cards looking for straights
-    for i in 0..7 {
+    for i in 0..4 {
       // If the current card is 11 then no straights are possible with a low card of Jack.
       if vec[i].value >= 11 {
         break;
@@ -207,7 +254,7 @@ impl Hand {
   }
 }
 
-pub fn deal(perm:[u32; 9]) -> Vec<Vec<Card>> {
+pub fn deal(perm:[u32; 9]) -> Vec<Card> {
   let mut hand1 = [perm[0], perm[2], 1, 2, 3, 4, 5];
   let mut hand2 = [perm[1], perm[3], 1, 2, 3, 4, 5];
 
@@ -220,7 +267,7 @@ pub fn deal(perm:[u32; 9]) -> Vec<Vec<Card>> {
   println!("{:?}", hand2);
 
   let mut hand1 = Hand::new(hand1);
-  let output = hand1.return_straights(hand1.sort_cards());
+  let output = hand1.return_flushes(hand1.sort_cards());
   return output;
 }
 
