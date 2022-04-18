@@ -251,25 +251,33 @@ impl Hand {
     return output;
   }
 
-  fn determine_strength(&mut self, vec: Vec<Card>) -> Vec<Card> {
-    let output: Vec<Card> = Vec::new();
-    let straights = self.return_straights(vec);
-    let mut straightflushes: Vec<Vec<Card>> = Vec::new();
+  // Given a set of cards and a value, return all Cards with the same value
+  fn return_samevalue(&self, val: u32, vec: Vec<Card>) -> Vec<Card> {
+    let mut output: Vec<Card> = Vec::new();
 
-    // Check if any of the straights are also flushes
-    for hand in straights.iter() {
-      let flush = self.return_flushes(hand.to_vec());
-      if flush.len() > 0 {
-        straightflushes.push(flush);  
+    for i in 0..(vec.len()) {
+      if vec[i].value == val {
+        output.push(vec[i]);
       }
     }
+    return output;
+  }
 
+  // Return a set of 4 cards if they all have the same value
+  fn return_fourkind(&self, vec: Vec<Card>, hash: HashMap<u32, u32>) -> Vec<Card> {
+    let mut output: Vec<Card> = vec![Card { value: 0, suit: 'C' }; 4];
+
+    for (key, val) in &hash {
+      if val == 4 {
+        let output = self.return_samevalue(key, vec);
+      }
+    }
 
     return output;
   }
 }
 
-pub fn deal(perm:[u32; 9]) -> Vec<Card> {
+pub fn deal(perm:[u32; 9]) -> HashMap<u32, u32> {
   let mut hand1 = [perm[0], perm[2], 1, 2, 3, 4, 5];
   let mut hand2 = [perm[1], perm[3], 1, 2, 3, 4, 5];
 
@@ -282,12 +290,12 @@ pub fn deal(perm:[u32; 9]) -> Vec<Card> {
   println!("{:?}", hand2);
 
   let hand1 = Hand::new(hand1);
-  let output = hand1.return_flushes(hand1.sort_cards());
+  let output = hand1.create_map();
   return output;
 }
 
 pub fn main() {   
-  let perm:[u32;9] = [8, 2, 9, 4, 50, 41, 42, 43, 44];
+  let perm:[u32;9] = [8, 2, 9, 4, 50, 41, 42, 43, 43];
   let output = deal(perm);
 
   println!("{:?}", output);
