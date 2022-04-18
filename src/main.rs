@@ -273,7 +273,12 @@ impl Hand {
       }
     }
 
-    return output;
+    if output[0].value == 0 {
+      let result: Vec<Card> = Vec::new();
+      return result;
+    } else {
+      return output;
+    }
   }
 
   // Return every set of 3 cards with the same value.
@@ -312,7 +317,7 @@ impl Hand {
         max = vec[i].value;
       }
 
-      if vec[i].value > max{
+      if (vec[i].value > max) | (vec[i].value == 1) {
         max = vec[i].value;
         ind = i;
       }
@@ -366,7 +371,6 @@ impl Hand {
             max = highest.value;
             ind = i;
           }
-
           // If the strongest card is an Ace, then it's a Royal Flush.
           if highest.value == 1 {
             self.strength = HandLevel::RoyalFlush;
@@ -530,6 +534,7 @@ impl Hand {
     }
     
     self.strength = HandLevel::Pair;
+    println!("{:?}", twokinds[ind].to_vec());
     return twokinds[ind].to_vec();
   }
 
@@ -575,10 +580,7 @@ pub fn deal(perm:[u32; 9]) -> Vec<String> {
     hand1[i - 2] = perm[i];
     hand2[i - 2] = perm[i];
   }
-
-  println!("{:?}", hand1);
-  println!("{:?}", hand2);
-
+  
   let mut hand1 = Hand::new(hand1);
   let mut hand2 = Hand::new(hand2);
 
@@ -599,7 +601,7 @@ pub fn deal(perm:[u32; 9]) -> Vec<String> {
     let temp1 = (hand1.return_highcard(hand1_strongest.to_vec())).value;
     let temp2 = (hand2.return_highcard(hand2_strongest.to_vec())).value;
     
-    if temp1 > temp2 {
+    if (temp1 > temp2) | (temp1 == 1) {
       return cards_tostring(hand1_strongest.to_vec());
     } else {
       return cards_tostring(hand2_strongest.to_vec());
@@ -608,7 +610,7 @@ pub fn deal(perm:[u32; 9]) -> Vec<String> {
 }
 
 pub fn main() {   
-  let perm:[u32;9] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  let perm:[u32;9] = [40, 52, 46, 11, 48, 27, 29, 32, 37];
   let winner:Vec<String> = deal(perm);
 
   println!("{:?}", winner);
