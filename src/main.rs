@@ -268,16 +268,58 @@ impl Hand {
     let mut output: Vec<Card> = vec![Card { value: 0, suit: 'C' }; 4];
 
     for (key, val) in &hash {
-      if val == 4 {
-        let output = self.return_samevalue(key, vec);
+      if val == &4 {
+        output = self.return_samevalue(*key, vec.to_vec());
       }
     }
 
     return output;
   }
+
+  fn return_threekind(&self, vec: Vec<Card>, hash: HashMap<u32, u32>) -> Vec<Vec<Card>> {
+    let mut output: Vec<Vec<Card>> = Vec::new();
+
+    for (key, val) in &hash {
+      if val == &3 {
+        output.push(self.return_samevalue(*key, vec.to_vec()));
+      }
+    }
+
+    return output;
+  }
+
+  fn return_twokind(&self, vec: Vec<Card>, hash: HashMap<u32, u32>) -> Vec<Vec<Card>> {
+    let mut output: Vec<Vec<Card>> = Vec::new();
+
+    for (key, val) in &hash {
+      if val == &2 {
+        output.push(self.return_samevalue(*key, vec.to_vec()));
+      }
+    }
+
+    return output;
+  }
+
+  fn return_highcard(&self, vec: Vec<Card>) -> Card {
+    let mut max = 0;
+    let mut ind = 0;
+
+    for i in 0..(vec.len()) {
+      if max == 0 {
+        max = vec[i].value;
+      }
+
+      if vec[i].value > max{
+        max = vec[i].value;
+        ind = i;
+      }
+    }
+    
+    return vec[ind];
+  }
 }
 
-pub fn deal(perm:[u32; 9]) -> HashMap<u32, u32> {
+pub fn deal(perm:[u32; 9]) -> Card {
   let mut hand1 = [perm[0], perm[2], 1, 2, 3, 4, 5];
   let mut hand2 = [perm[1], perm[3], 1, 2, 3, 4, 5];
 
@@ -290,12 +332,14 @@ pub fn deal(perm:[u32; 9]) -> HashMap<u32, u32> {
   println!("{:?}", hand2);
 
   let hand1 = Hand::new(hand1);
-  let output = hand1.create_map();
+  let map = hand1.create_map();
+  let hand1_cards = hand1.sort_cards();
+  let output = hand1.return_highcard(hand1_cards);
   return output;
 }
 
 pub fn main() {   
-  let perm:[u32;9] = [8, 2, 9, 4, 50, 41, 42, 43, 43];
+  let perm:[u32;9] = [1, 2, 3, 4, 5, 10, 10, 11, 11];
   let output = deal(perm);
 
   println!("{:?}", output);
