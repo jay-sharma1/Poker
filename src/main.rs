@@ -323,13 +323,15 @@ impl Hand {
 
   //Return the strongest hand and update the Hand.strength.
   fn determine_strength(&mut self, vec: Vec<Card>) -> Vec<Card> {
-    let flushes: Vec<Card> = self.return_flushes(vec);
-    let straights: Vec<Vec<Card>> = self.return_straights(vec);
+    let flushes: Vec<Card> = self.return_flushes(vec.to_vec());
+    let straights: Vec<Vec<Card>> = self.return_straights(vec.to_vec());
     
     let map: HashMap<u32, u32> = self.create_map();
-    let fourkinds: Vec<Card> = self.return_fourkind(vec, map);
-    let threekinds: Vec<Vec<Card>> = self.return_threekind(vec, map);
-    let twokinds: Vec<Vec<Card>> = self.return_twokind(vec, map);
+    let map1: HashMap<u32, u32> = self.create_map();
+    let map2: HashMap<u32, u32> = self.create_map();
+    let fourkinds: Vec<Card> = self.return_fourkind(vec.to_vec(), map);
+    let threekinds: Vec<Vec<Card>> = self.return_threekind(vec.to_vec(), map1);
+    let twokinds: Vec<Vec<Card>> = self.return_twokind(vec.to_vec(), map2);
     
     
 
@@ -347,7 +349,7 @@ impl Hand {
         }
 
         if temp {
-          straightflushes.push(straights[i]);
+          straightflushes.push(straights[i].to_vec());
         }
       }
 
@@ -357,7 +359,7 @@ impl Hand {
       if straightflushes.len() >= 1 {
         
         for i in 0..(straightflushes.len()) {
-          let highest = self.return_highcard(straightflushes[i]);
+          let highest = self.return_highcard(straightflushes[i].to_vec());
 
           // Remember the index of the straight flush with the strongest card
           if (highest.value > max) | (highest.value == 1) {
@@ -368,18 +370,18 @@ impl Hand {
           // If the strongest card is an Ace, then it's a Royal Flush.
           if highest.value == 1 {
             self.strength = HandLevel::RoyalFlush;
-            return straightflushes[i];
+            return straightflushes[i].to_vec();
           }
         }
 
         // If no royal flush was found, then return the straight flush with the strongest card.
         self.strength = HandLevel::StraightFlush;
-        return straightflushes[ind];
+        return straightflushes[ind].to_vec();
       }
     } 
 
     // If there is a four of a kind, then return that.
-    if fourkinds.len() > 0 {
+    if fourkinds.len() >= 1 {
       self.strength = HandLevel::FourKind;
       return fourkinds;
     }
@@ -391,7 +393,7 @@ impl Hand {
       let mut ind = 0;
 
       for i in 0..(twokinds.len()) {
-        let highest = self.return_highcard(twokinds[i]);
+        let highest = self.return_highcard(twokinds[i].to_vec());
 
         // Remember the index of the pair with the strongest card
         if (highest.value > max) | (highest.value == 1) {
@@ -407,7 +409,7 @@ impl Hand {
       ind = 0;
 
       for i in 0..(threekinds.len()) {
-        let highest = self.return_highcard(threekinds[i]);
+        let highest = self.return_highcard(threekinds[i].to_vec());
 
         // Remember the index of the pair with the strongest card
         if (highest.value > max) | (highest.value == 1) {
@@ -427,8 +429,6 @@ impl Hand {
   // Return strongest flush.
   if flushes.len() >= 1 {
     let mut output: Vec<Card> = Vec::new(); 
-    let mut max = 0;
-    let mut ind = 0;
 
     for i in (flushes.len() - 5)..(flushes.len()) {
       output.push(flushes[i])
@@ -444,7 +444,26 @@ impl Hand {
     let mut ind = 0;
 
     for i in 0..(straights.len()) {
-      let highest = self.return_highcard(straights[i]);
+      let highest = self.return_highcard(straights[i].to_vec());
+
+      // Remember the index of the pair with the strongest card.
+      if (highest.value > max) | (highest.value == 1) {
+        max = highest.value;
+        ind = i;
+      }
+    }
+
+    self.strength = HandLevel::Straight;
+    return straights[ind].to_vec();
+  }
+
+  // Return strongest three of a kind.
+  if threekinds.len() >= 1 {
+    let mut max = 0;
+    let mut ind = 0;
+
+    for i in 0..(threekinds.len()) {
+      let highest = self.return_highcard(threekinds[i].to_vec());
 
       // Remember the index of the pair with the strongest card
       if (highest.value > max) | (highest.value == 1) {
@@ -453,18 +472,102 @@ impl Hand {
       }
     }
 
-    self.strength = HandLevel::Flush;
-    return straights[ind];
+    self.strength = HandLevel::ThreeKind;
+    return threekinds[ind].to_vec();
   }
 
-  
+  // Return strongest two pairs.
+  if twokinds.len() >= 2 {
+    let mut output: Vec<Card> = Vec::new(); 
+    let mut max = 0;
+    let mut ind = 0;
 
+    for i in 0..(twokinds.len()) {
+      let highest = self.return_highcard(twokinds[i].to_vec());
+
+      // Remember the index of the pair with the strongest card
+      if (highest.value > max) | (highest.value == 1) {
+        max = highest.value;
+        ind = i;
+      }
+    }
+
+    let mut max1 = 0;
+    let mut ind1 = 0;
+
+    for i in 0..(twokinds.len()) {
+      let highest = self.return_highcard(twokinds[i].to_vec());
+
+      // Remember the index of the pair with the strongest card
+      if ((highest.value > max1) | (highest.value == 1)) && (highest.value != max) {
+        max1 = highest.value;
+        ind1 = i;
+      }
+    }
     
+    output.push(twokinds[ind1][0]);
+    output.push(twokinds[ind1][1]);
+    output.push(twokinds[ind][0]);
+    output.push(twokinds[ind][1]);
+
+    self.strength = HandLevel::TwoPair;
     return output;
+  }
+
+  // Return strongest single pair.
+  if twokinds.len() >= 1 {
+    let mut max = 0;
+    let mut ind = 0;
+
+    for i in 0..(twokinds.len()) {
+      let highest = self.return_highcard(twokinds[i].to_vec());
+
+      // Remember the index of the pair with the strongest card
+      if (highest.value > max) | (highest.value == 1) {
+        max = highest.value;
+        ind = i;
+      }
+    }
+    
+    self.strength = HandLevel::Pair;
+    return twokinds[ind].to_vec();
+  }
+
+  // Return highest card.
+  let mut output: Vec<Card> = Vec::new(); 
+  output.push(self.return_highcard(vec));
+  return output;
+  }
+
+  // Return a higher value, the better stronger a Hand is.
+  fn hand_strength(&self) -> u32 {
+    match self.strength {
+      HandLevel::RoyalFlush => 10,
+      HandLevel::StraightFlush => 9,
+      HandLevel::FourKind => 8,
+      HandLevel::FullHouse => 7,
+      HandLevel::Flush => 6,
+      HandLevel::Straight => 5,
+      HandLevel::ThreeKind => 4,
+      HandLevel::TwoPair => 3,
+      HandLevel::Pair => 2,
+      HandLevel::HighCard => 1,
+      HandLevel::None => 0,
+    }
   }
 }
 
-pub fn deal(perm:[u32; 9]) -> Card {
+pub fn cards_tostring(vec: Vec<Card>) -> Vec<String> {
+  let mut output: Vec<String> = Vec::new();
+
+  for i in 0..(vec.len()) {
+    output.push(vec[i].convert_string());
+  }
+  
+  return output;
+}
+
+pub fn deal(perm:[u32; 9]) -> Vec<String> {
   let mut hand1 = [perm[0], perm[2], 1, 2, 3, 4, 5];
   let mut hand2 = [perm[1], perm[3], 1, 2, 3, 4, 5];
 
@@ -476,23 +579,37 @@ pub fn deal(perm:[u32; 9]) -> Card {
   println!("{:?}", hand1);
   println!("{:?}", hand2);
 
-  let hand1 = Hand::new(hand1);
-  let hand2 = Hand::new(hand2);
+  let mut hand1 = Hand::new(hand1);
+  let mut hand2 = Hand::new(hand2);
 
   let hand1_cards = hand1.sort_cards();
   let hand2_cards = hand2.sort_cards();
 
-  let hand1_strongest = hand1.determine_strength(hand1_cards);
-  let hand2_strongest = hand2.determine_strength(hand2_cards);
+  let hand1_strongest = hand1.determine_strength(hand1_cards.to_vec());
+  let hand2_strongest = hand2.determine_strength(hand2_cards.to_vec());
 
-  
-  let output = hand1.return_highcard(hand1_cards);
-  return output;
+  if hand1.hand_strength() > hand2.hand_strength() {
+    return cards_tostring(hand1_strongest.to_vec());
+    
+  } else if hand1.hand_strength() < hand2.hand_strength() {
+    return cards_tostring(hand2_strongest.to_vec());
+    
+  } else {
+
+    let temp1 = (hand1.return_highcard(hand1_strongest.to_vec())).value;
+    let temp2 = (hand2.return_highcard(hand2_strongest.to_vec())).value;
+    
+    if temp1 > temp2 {
+      return cards_tostring(hand1_strongest.to_vec());
+    } else {
+      return cards_tostring(hand2_strongest.to_vec());
+    }
+  }
 }
 
 pub fn main() {   
-  let perm:[u32;9] = [1, 2, 3, 4, 5, 10, 10, 11, 11];
-  let output = deal(perm);
+  let perm:[u32;9] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  let winner:Vec<String> = deal(perm);
 
-  println!("{:?}", output);
+  println!("{:?}", winner);
 }
