@@ -104,7 +104,7 @@ impl Hand {
 
   // Create a dictionary of all card values
   fn create_map(&self) -> HashMap<u32, u32> {
-    let mut dict = HashMap::new();
+    let mut dict = HashMap::new(); 
 
     // Iterate through all Cards in Hand
     for i in 0..7 {
