@@ -276,6 +276,7 @@ impl Hand {
     return output;
   }
 
+  // Return every set of 3 cards with the same value.
   fn return_threekind(&self, vec: Vec<Card>, hash: HashMap<u32, u32>) -> Vec<Vec<Card>> {
     let mut output: Vec<Vec<Card>> = Vec::new();
 
@@ -288,6 +289,7 @@ impl Hand {
     return output;
   }
 
+  // Return every set of 2 cards with the same value.
   fn return_twokind(&self, vec: Vec<Card>, hash: HashMap<u32, u32>) -> Vec<Vec<Card>> {
     let mut output: Vec<Vec<Card>> = Vec::new();
 
@@ -300,6 +302,7 @@ impl Hand {
     return output;
   }
 
+  // Return the card with the highest value.
   fn return_highcard(&self, vec: Vec<Card>) -> Card {
     let mut max = 0;
     let mut ind = 0;
@@ -317,6 +320,30 @@ impl Hand {
     
     return vec[ind];
   }
+
+  //Return the strongest hand and update the Hand.strength.
+  fn determine_strength(&mut self, vec: Vec<Card>) -> Vec<Card> {
+    let flushes = self.return_flushes(vec);
+    let straights = self.return_straights(vec);
+    
+    let map = self.create_map();
+    let fourkinds = self.return_fourkind(vec, map);
+    let threekinds = self.return_threekind(vec, map);
+    let twokinds = self.return_twokind(vec, map);
+    
+    let mut straightflushes: Vec<Vec<Card>> = Vec::new();
+
+    // Check if this hand contains straights and flushes. If it contains both, then check for a royal flush, otherwise return the strongest straight flush.
+    if (straights.len() >= 1) && (flushes.len() >= 1) {
+      
+    } 
+
+    
+    for i in 
+
+
+    return output;
+  }
 }
 
 pub fn deal(perm:[u32; 9]) -> Card {
@@ -332,8 +359,15 @@ pub fn deal(perm:[u32; 9]) -> Card {
   println!("{:?}", hand2);
 
   let hand1 = Hand::new(hand1);
-  let map = hand1.create_map();
+  let hand2 = Hand::new(hand2);
+
   let hand1_cards = hand1.sort_cards();
+  let hand2_cards = hand2.sort_cards();
+
+  let hand1_strongest = hand1.determine_strength(hand1_cards);
+  let hand2_strongest = hand2.determine_strength(hand2_cards);
+
+  
   let output = hand1.return_highcard(hand1_cards);
   return output;
 }
