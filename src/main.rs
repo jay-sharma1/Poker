@@ -254,13 +254,13 @@ impl Hand {
   fn determine_strength(&mut self, vec: Vec<Card>) -> Vec<Card> {
     let output: Vec<Card> = Vec::new();
     let straights = self.return_straights(vec);
+    let mut straightflushes: Vec<Vec<Card>> = Vec::new();
 
     // Check if any of the straights are also flushes
-    for i in 0..(straights.len()) {
-      let flush = self.return_flushes(straights[i]);
-
-      if flush.len() != 0 {
-        
+    for hand in straights.iter() {
+      let flush = self.return_flushes(hand.to_vec());
+      if flush.len() > 0 {
+        straightflushes.push(flush);  
       }
     }
 
@@ -281,7 +281,7 @@ pub fn deal(perm:[u32; 9]) -> Vec<Card> {
   println!("{:?}", hand1);
   println!("{:?}", hand2);
 
-  let mut hand1 = Hand::new(hand1);
+  let hand1 = Hand::new(hand1);
   let output = hand1.return_flushes(hand1.sort_cards());
   return output;
 }
