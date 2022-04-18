@@ -66,7 +66,7 @@ impl PartialOrd for Card {
 
 impl PartialEq for Card {
   fn eq(&self, other: &Self) -> bool {
-    self.value == other.value
+    (self.value == other.value) && (self.suit == other.suit)
   }
 }
 
@@ -323,25 +323,143 @@ impl Hand {
 
   //Return the strongest hand and update the Hand.strength.
   fn determine_strength(&mut self, vec: Vec<Card>) -> Vec<Card> {
-    let flushes = self.return_flushes(vec);
-    let straights = self.return_straights(vec);
+    let flushes: Vec<Card> = self.return_flushes(vec);
+    let straights: Vec<Vec<Card>> = self.return_straights(vec);
     
-    let map = self.create_map();
-    let fourkinds = self.return_fourkind(vec, map);
-    let threekinds = self.return_threekind(vec, map);
-    let twokinds = self.return_twokind(vec, map);
+    let map: HashMap<u32, u32> = self.create_map();
+    let fourkinds: Vec<Card> = self.return_fourkind(vec, map);
+    let threekinds: Vec<Vec<Card>> = self.return_threekind(vec, map);
+    let twokinds: Vec<Vec<Card>> = self.return_twokind(vec, map);
     
-    let mut straightflushes: Vec<Vec<Card>> = Vec::new();
+    
 
-    // Check if this hand contains straights and flushes. If it contains both, then check for a royal flush, otherwise return the strongest straight flush.
+    // Check if this hand contains straights and flushes. If it contains both, then check for a royal flush, otherwise return the strongest straight flush if there is one.
     if (straights.len() >= 1) && (flushes.len() >= 1) {
-      
+      let mut straightflushes: Vec<Vec<Card>> = Vec::new(); 
+      for i in 0..(straights.len()) {
+        let mut temp = true;
+        
+        for x in 0..5 {
+          if flushes.contains(&straights[i][x]) == false {
+            temp = false;
+            break;
+          }
+        }
+
+        if temp {
+          straightflushes.push(straights[i]);
+        }
+      }
+
+      let mut max = 0;
+      let mut ind = 0;
+      // Check if we found any straight flushes.
+      if straightflushes.len() >= 1 {
+        
+        for i in 0..(straightflushes.len()) {
+          let highest = self.return_highcard(straightflushes[i]);
+
+          // Remember the index of the straight flush with the strongest card
+          if (highest.value > max) | (highest.value == 1) {
+            max = highest.value;
+            ind = i;
+          }
+
+          // If the strongest card is an Ace, then it's a Royal Flush.
+          if highest.value == 1 {
+            self.strength = HandLevel::RoyalFlush;
+            return straightflushes[i];
+          }
+        }
+
+        // If no royal flush was found, then return the straight flush with the strongest card.
+        self.strength = HandLevel::StraightFlush;
+        return straightflushes[ind];
+      }
     } 
 
+    // If there is a four of a kind, then return that.
+    if fourkinds.len() > 0 {
+      self.strength = HandLevel::FourKind;
+      return fourkinds;
+    }
+
+    // If there is three of a kind and two of a kind, then return the full house with the strongest of each.
+    if (threekinds.len() >= 1) && (twokinds.len() >= 1) {
+      let mut output: Vec<Card> = Vec::new(); 
+      let mut max = 0;
+      let mut ind = 0;
+
+      for i in 0..(twokinds.len()) {
+        let highest = self.return_highcard(twokinds[i]);
+
+        // Remember the index of the pair with the strongest card
+        if (highest.value > max) | (highest.value == 1) {
+          max = highest.value;
+          ind = i;
+        }
+      }
+
+      output.push(twokinds[ind][0]);
+      output.push(twokinds[ind][1]);
+
+      max = 0;
+      ind = 0;
+
+      for i in 0..(threekinds.len()) {
+        let highest = self.return_highcard(threekinds[i]);
+
+        // Remember the index of the pair with the strongest card
+        if (highest.value > max) | (highest.value == 1) {
+          max = highest.value;
+          ind = i;
+        }
+      }
+
+      output.push(threekinds[ind][0]);
+      output.push(threekinds[ind][1]);
+      output.push(threekinds[ind][2]);
+
+      self.strength = HandLevel::FullHouse;
+      return output;
+    }
+
+  // Return strongest flush.
+  if flushes.len() >= 1 {
+    let mut output: Vec<Card> = Vec::new(); 
+    let mut max = 0;
+    let mut ind = 0;
+
+    for i in (flushes.len() - 5)..(flushes.len()) {
+      output.push(flushes[i])
+    }
+
+    self.strength = HandLevel::Flush;
+    return output;
+  }
+
+  // Return strongest straight.
+  if straights.len() >= 1 {
+    let mut max = 0;
+    let mut ind = 0;
+
+    for i in 0..(straights.len()) {
+      let highest = self.return_highcard(straights[i]);
+
+      // Remember the index of the pair with the strongest card
+      if (highest.value > max) | (highest.value == 1) {
+        max = highest.value;
+        ind = i;
+      }
+    }
+
+    self.strength = HandLevel::Flush;
+    return straights[ind];
+  }
+
+  
+
     
-    for i in 
-
-
     return output;
   }
 }
