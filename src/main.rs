@@ -121,7 +121,7 @@ impl Hand {
   } 
 
   // Return a set of 5 or more card with the same suit
-  fn return_flushes(&mut self, vec: Vec<Card>) -> Vec<Card> {
+  fn return_flushes(&self, vec: Vec<Card>) -> Vec<Card> {
     
     let mut output: Vec<Card> = Vec::new();
     for i in 0..7 {
@@ -168,7 +168,7 @@ impl Hand {
   }  
 
   // Return every set of 5 Cards that count as a Straight
-  fn return_straights(&mut self, vec: Vec<Card>) -> Vec<Vec<Card>> {
+  fn return_straights(&self, vec: Vec<Card>) -> Vec<Vec<Card>> {
     let mut output: Vec<Vec<Card>> = Vec::new();
 
     // Go through cards looking for straights
@@ -247,9 +247,24 @@ impl Hand {
         }
       }
     }
-    if output.len() >= 1 {
-      self.strength = HandLevel::Straight;
+
+    return output;
+  }
+
+  fn determine_strength(&mut self, vec: Vec<Card>) -> Vec<Card> {
+    let output: Vec<Card> = Vec::new();
+    let straights = self.return_straights(vec);
+
+    // Check if any of the straights are also flushes
+    for i in 0..(straights.len()) {
+      let flush = self.return_flushes(straights[i]);
+
+      if flush.len() != 0 {
+        
+      }
     }
+
+
     return output;
   }
 }
@@ -272,7 +287,7 @@ pub fn deal(perm:[u32; 9]) -> Vec<Card> {
 }
 
 pub fn main() {   
-  let perm:[u32;9] = [8, 2, 9, 4, 10, 11, 12, 13, 1];
+  let perm:[u32;9] = [8, 2, 9, 4, 50, 41, 42, 43, 44];
   let output = deal(perm);
 
   println!("{:?}", output);
